@@ -2,7 +2,6 @@ import os
 import sys
 import glob
 import time
-import datetime
 import pandas as pd
 import numpy as np
 from urllib.request import urlopen, Request
@@ -83,6 +82,7 @@ class StockCodeCrawler:
             'name': name_list
         })
         df.drop_duplicates(inplace=True)
+        df.dropna(inplace=True)
         df.set_index(['name'], inplace=True)
         df.to_csv('raw_data/code.csv', encoding='utf-8_sig')
 
@@ -151,27 +151,29 @@ class StockDataCrawler:
     爬取股票历史数据
     """
 
-    def __init__(self, code):
-        """
-        :param code: 股票代码
-        """
+    def __init__(self):
+        self.code = None
+
+    def set_code(self, code):
         self.code = code
 
-    def get_data(self, start, end, offline=True):
+    def get_data(self, start, end, online=False):
         """
         获取一段时间内的股票数据
         :param start: 开始日期
         :param end: 结束日期
         :param offline: 默认从本地查找数据，当offline为True但本地找不到数据时，联网找数据；当offline为False时，联网找数据
-        :return: DataFrame对象
+        :return: DataFrame对象，如果股票代码有误，返回None
         """
 
         # 查找本地是否存在对应的csv文件，如果其创建日期与当前日期相同，直接读取该csv，否则更新
         code = str(self.code)
         file_name = f"./raw_data/{code}.csv"
-        if offline and os.path.exists(file_name):
+        if not online and os.path.exists(file_name):
             print("Loading data locally.")
             df = pd.read_csv(file_name)
+            return df
+
         else:
             print("Fetching data...")
             # 在线获取/更新股票历史数据
@@ -182,7 +184,14 @@ class StockDataCrawler:
                 code = '0' + code
             else:
                 print("股票代码有误，请检查")
+                return None
+
             url = url_mod % (code, start, end)
             df = pd.read_csv(url, encoding='gb2312')
-            df.to_csv(f"./raw_data/{self.code}.csv", encoding='utf-8_sig')
-        return df
+            if len(df) == 0:
+                print("股票代码有误，请检查")
+                return None
+
+            else:
+                df.to_csv(f"./raw_data/{self.code}.csv", encoding='utf-8_sig')
+                return df
