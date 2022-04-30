@@ -37,7 +37,12 @@ class StockCodeCrawler:
         path = sys.path[0] + '\\raw_data'
         # 删除之前的csv
         for csv_file in glob.glob(os.path.join(path, '*.csv')):
-            os.remove(csv_file)
+            try:
+                os.remove(csv_file)
+            except FileNotFoundError:
+                print("no csv file found!")
+            except IsADirectoryError:
+                print("the path is not a file but a directory!")
 
         # 获取股票代码和名称的列表
         code_list = []

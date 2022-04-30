@@ -2,8 +2,8 @@
 绘画类
 """
 import pandas as pd
-import numpy as np
-import seaborn as sns
+from Func import df2json
+from flask import Flask
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdate
 
