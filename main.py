@@ -24,6 +24,16 @@ if __name__ == '__main__':
         elif opcode == 'e':
             break
         else:
+            print('请输入正确指令！')
+            continue
+
+        # 代码需要已0/3/6开头
+        if code.startswith('0') or code.startswith('3'):
+            code = '1' + code
+        elif code.startswith('6'):
+            code = '0' + code
+        else:
+            print("股票代码有误，请检查")
             continue
 
         # 从网络爬取数据或从本地获取数据
@@ -31,20 +41,33 @@ if __name__ == '__main__':
         data_crawler.set_code(code)
 
         # 选择在线/离线获取
-        while True:
-            if os.path.exists(f'./raw_data/{code}.csv'):
-                print("存在本地数据")
-            method = input("是否选择在线获取数据？(Y/N)")
-            if method == 'Y':
-                method = 1
-                break
-            elif method == 'N':
-                method = 0
-                break
-            else:
-                print("请输入Y或者N")
-        df = data_crawler.get_data(start='19900101', end='', online=method)
+        if os.path.exists(f'./raw_data/{code}.csv'):
+            method = input("存在本地数据，是否选择获取本地数据？(Y/N)")
+            while True:
+                if method == 'Y':
+                    method = 0
+                    break
+                elif method == 'N':
+                    print('选择获取在线数据')
+                    method = 1
+                    break
+                else:
+                    method = input("存在本地数据，是否选择获取本地数据？(Y/N)")
+        else:
+            print('不存在本地数据，自动选择获取在线数据')
+            method = 1
+
+        if method == 1:
+            start_date = input('请输入开始日期(如19900101)')
+            end_date = input('请输入结束日期(如20211205)')
+        else:
+            start_date = None
+            end_date = None
+
+        df = data_crawler.get_data(start=start_date, end=end_date, online=method)
+
         if df is None:
+            print('数据获取失败，请检查股票代码是否正确，或输入的日期格式是否正确')
             continue
 
         df2json(df)

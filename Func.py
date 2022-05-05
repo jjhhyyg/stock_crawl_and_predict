@@ -18,6 +18,6 @@ def df2json(df):
     target_arr = target_df.values
     l = target_arr.tolist()
     json_arr = json.dumps(l)
-    print(json_arr)
+    # print(json_arr)
     with open('static/data/data.json', 'w') as f:
         f.write(json_arr)

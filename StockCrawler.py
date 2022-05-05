@@ -162,16 +162,16 @@ class StockDataCrawler:
     def set_code(self, code):
         self.code = code
 
-    def get_data(self, start, end, online=False):
+    def get_data(self, start, end, online):
         """
         获取一段时间内的股票数据
         :param start: 开始日期
         :param end: 结束日期
-        :param offline: 默认从本地查找数据，当offline为True但本地找不到数据时，联网找数据；当offline为False时，联网找数据
+        :param online: 获取数据的方式
         :return: DataFrame对象，如果股票代码有误，返回None
         """
 
-        # 查找本地是否存在对应的csv文件，如果其创建日期与当前日期相同，直接读取该csv，否则更新
+        # 查找本地是否存在对应的csv文件，如果存在，直接读取该csv，否则更新
         code = str(self.code)
         file_name = f"./raw_data/{code}.csv"
         if not online and os.path.exists(file_name):
@@ -183,13 +183,6 @@ class StockDataCrawler:
             print("Fetching data...")
             # 在线获取/更新股票历史数据
             url_mod = "http://quotes.money.163.com/service/chddata.html?code=%s&start=%s&end=%s"
-            if code.startswith('0') or code.startswith('3'):
-                code = '1' + code
-            elif code.startswith('6'):
-                code = '0' + code
-            else:
-                print("股票代码有误，请检查")
-                return None
 
             url = url_mod % (code, start, end)
             df = pd.read_csv(url, encoding='gb2312')
